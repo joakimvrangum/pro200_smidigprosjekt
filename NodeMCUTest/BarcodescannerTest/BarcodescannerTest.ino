@@ -1,8 +1,9 @@
 #include <SoftwareSerial.h>
 
-const int pinRX = 12;
-const int pinTX = 13;
-const int pinBarcodeTrigger = 8;
+const int pinRX = 5;
+const int pinTX = 4;
+const int pinBarcodeTrigger = 16;
+char c;
 
 String barcodeValue;
 
@@ -18,9 +19,7 @@ void setup() {
     ; // wait for serial port to connect. Needed for native USB port only
   }
   byte message[] = {0x0B, 0x04, 0x31, 0x00, 0x00, 0x41, 0x30, 0x30, 0x30, 0x30, 0xFF, 0xFD, 0xC0};
-  if(mySerial.write(message, sizeof(message))) {
-    Serial.print("Skrevet melding.");
-  }
+  mySerial.write(message, sizeof(message));
 }
 
 void loop() {
@@ -28,7 +27,11 @@ void loop() {
   delay(30);
   digitalWrite(pinBarcodeTrigger, LOW);
   if (mySerial.available()) {
-    Serial.print(mySerial.read());
+    c = mySerial.read();
+    Serial.print(c);
+    if ((int)c == 13) {
+      Serial.println("Sender strekkode..");
+    }
   }
   delay(200);
 }
