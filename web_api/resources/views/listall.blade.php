@@ -7,6 +7,7 @@
         <h4>{{ $vare->vare_navn }}</h4>
     @endforeach
 
+    <hr>
     <h2>{{ $varer->count() }} varer tilgjengelig i kolonialen.</h2>
     </div>
 

@@ -12,7 +12,6 @@ class VareController extends Controller
 	protected $table = 'varer';
 
     public function new(Request $request) {
-    	//dd($request);
 		$validator = Validator::make($request->input(),
 			[
 				'upc'	=> 'required|max:14',

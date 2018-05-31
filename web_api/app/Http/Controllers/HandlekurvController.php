@@ -36,6 +36,37 @@ class HandlekurvController extends Controller
 		}
 	}
 
+	public function LeggTilPost(Request $request) {
+		$request->validate(
+			[
+				'upc'	=> 'required|max:14',
+				'kunde'	=> 'required',
+			],
+			[
+				'upc.required'		=>	'Strekkode mangler.',
+				'upc.max'			=>	'Strekkoden er for lang.',
+				'kunde.required'	=>	'Mangler kunde-ID.',
+				'kunde.int' 		=>	'Kunde-ID har feil datatype.',
+			]);
+
+			if (Vare::find($request->upc)) {
+				$handlekurv = Handlekurv::where('kunde','=',$request->kunde)->where('upc','=',$request->upc)->first();
+				if ($handlekurv === NULL) {
+					$handlekurv = New Handlekurv;
+					$handlekurv->kunde = $request->kunde;
+					$handlekurv->upc = $request->upc;
+					$handlekurv->antall = 1;
+					$handlekurv->save();
+				} else {
+					$handlekurv->antall++;
+					$handlekurv->save();
+				}
+				return "OK";
+			} else {
+				return "FAILED_ADD";
+			}
+	}
+
 	public function BestillingOK($kunde) {
 		Handlekurv::where('kunde','=',$kunde)->delete();
 		return view ('bestilt');
