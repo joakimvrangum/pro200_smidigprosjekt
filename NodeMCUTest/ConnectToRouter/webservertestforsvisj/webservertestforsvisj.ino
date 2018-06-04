@@ -47,21 +47,34 @@ void setup() {
   server.on("/input", getInputs);
   server.begin();
 
-  String ssid = "onlykolonialswillknow";
-  String password = "thiswillnotworkasintended";
+  String ssid = "onlykolonial";
+  String password = "abcdefghijklmnopqrstuvwxyz";
 
-  writeEEPROM(0, ssid);
+  int address = 0;
+  char arrayToStore[64];
+  char arrayThatWasStored[64];
+  ssid.toCharArray(arrayToStore, ssid.length()+1);
+
+  Serial.println(arrayToStore);
+  
+  EEPROM.put(address, arrayToStore);
+  EEPROM.get(address, arrayThatWasStored);
+
+  Serial.println(arrayThatWasStored);
+
+  
+  //writeEEPROM(0, ssid);
   Serial.println();
-  writeEEPROM(32, password);
+  //writeEEPROM(32, password);
   Serial.println();
   Serial.println("Wrote to EEPROM, let's check if it actually did anything");
 
-  SSIDName = readEEPROM(0,32);
-  SSIDPassword = readEEPROM(32, 64);
+  //SSIDName = readEEPROM(0,32);
+  //SSIDPassword = readEEPROM(32, 64);
 
   Serial.println();
-  Serial.println(SSIDName);
-    Serial.println(SSIDPassword);
+  //Serial.println(SSIDName);
+  //Serial.println(SSIDPassword);
 
   
 /*
