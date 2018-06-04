@@ -34,7 +34,7 @@ void setup() {
   pinMode(pinRX, INPUT);
   pinMode(pinTX, OUTPUT);
 
-  Serial.begin(9600);
+  Serial.begin(115200);
   EEPROM.begin(1024);
   mySerial.begin(115200);
 
