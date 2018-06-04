@@ -11,8 +11,8 @@
     <h2>{{ $varer->total() }} varer tilgjengelig i kolonialen.</h2>
     </div>
 
-    <!-- SIDER (20 varer) -->
-    <div id="images-pagination-wrapper">
+    <!-- SIDER (10 varer) -->
+    <div class="justify-content-center">
         {{ $varer->links() }}
     </div>
 @stop
