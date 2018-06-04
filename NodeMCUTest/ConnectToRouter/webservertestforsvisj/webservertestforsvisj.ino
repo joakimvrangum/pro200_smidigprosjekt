@@ -44,6 +44,12 @@ void setup() {
   }
   if (WiFi.status() == WL_CONNECTED) {
     wificonnected = true;
+    Serial.println();
+    Serial.print("The wifi we are connected to is called : ");
+    Serial.println(winame);
+    Serial.print("The wifi's password is saved in plain text as : ");
+    Serial.println(wipass);
+
   } else {
     wificonnected = false;
 
@@ -172,8 +178,8 @@ void loop() {
 
 }
 
-bool checkConnection(){
-  if(WiFi.status() == WL_CONNECTED) return true;
+bool checkConnection() {
+  if (WiFi.status() == WL_CONNECTED) return true;
   return false;
 }
 
