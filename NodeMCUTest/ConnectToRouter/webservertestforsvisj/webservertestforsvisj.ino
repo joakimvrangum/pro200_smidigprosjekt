@@ -4,10 +4,10 @@
 #include <DNSServer.h>
 #include <EEPROM.h>
 
-
 String SSIDName;
 String SSIDPassword;
 
+const char *APID = "koloPUBGPROELITE";
 const char *APPASS = "";
 
 const byte DNS_PORT = 53;
@@ -56,6 +56,15 @@ void setup() {
   Serial.println();
   Serial.println("Wrote to EEPROM, let's check if it actually did anything");
 
+  SSIDName = readEEPROM(0,32);
+  SSIDPassword = readEEPROM(32, 64);
+
+  Serial.println();
+  Serial.println(SSIDName);
+    Serial.println(SSIDPassword);
+
+  
+/*
   String winame = readEEPROM(0, 32);
   Serial.println("We got this from EEPROM as name:");
   Serial.println(winame);
@@ -64,8 +73,41 @@ void setup() {
   String wipassword = readEEPROM(32, 64);
   Serial.println("We got this from EEPROM as password:");
   Serial.println(wipassword);
+*/
+}
+
+void writeEEPROM(int startOfMemoryToAppend, String stringToAppend) {
+
+
+  int i = 0;
+  i += startOfMemoryToAppend;
+  for (i; i < (stringToAppend.length() + startOfMemoryToAppend) ; i++) {
+    EEPROM.write(i + startOfMemoryToAppend, stringToAppend[i]);
+    Serial.print(stringToAppend[i]);
+  }
+  EEPROM.commit();
+  delay(1000);
 
 }
+
+
+String readEEPROM(int startOfMemoryToRead, int lengthToRead) {
+  //char *stringyasfuck = (char*)malloc (sizeof(char) * lengthToRead);
+  //char buf[lengthToRead];
+  String string;
+  int i = 0;
+  for (i; i < lengthToRead ; i++) {
+
+    string[i] += char(EEPROM.read(i + startOfMemoryToRead));
+    Serial.print(string[i]);
+    Serial.print("<");
+
+  }
+
+
+  return string;
+}
+
 
 void loop() {
   dnsServer.processNextRequest();
@@ -219,37 +261,6 @@ void writeEEPROMchar(int startOfMemoryToAppend, char * stringToAppend, int lengd
 }
 */
 
-void writeEEPROM(int startOfMemoryToAppend, String stringToAppend) {
-
-
-  int i = 0;
-  i += startOfMemoryToAppend;
-  for (i; i < (stringToAppend.length() + startOfMemoryToAppend) ; i++) {
-    EEPROM.write(i + startOfMemoryToAppend, stringToAppend[i]);
-    Serial.print(stringToAppend[i]);
-  }
-  EEPROM.commit();
-  delay(1000);
-
-}
-
-
-String readEEPROM(int startOfMemoryToRead, int lengthToRead) {
-  //char *stringyasfuck = (char*)malloc (sizeof(char) * lengthToRead);
-  //char buf[lengthToRead];
-  String string;
-  int i = 0;
-  for (i; i < lengthToRead ; i++) {
-
-    string[i] += char(EEPROM.read(i + startOfMemoryToRead));
-    Serial.print(string[i]);
-    Serial.print("<");
-
-  }
-
-
-  return string;
-}
 
 /*
   char* readEEPROM(int startOfMemoryToRead, int lengthToRead) {
