@@ -5,6 +5,7 @@
 #include <DNSServer.h>
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
+#include <Adafruit_NeoPixel.h>
 
 String SSIDName;
 String SSIDPassword;
@@ -29,6 +30,12 @@ String postData;
 
 SoftwareSerial mySerial(pinRX, pinTX); // RX,  TX
 
+#define LEDPIN            12
+#define NUMPIXELS      9
+
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LEDPIN, NEO_GRB + NEO_KHZ800);
+int delayval = 10;
+
 void setup() {
   pinMode(pinBarcodeTrigger, OUTPUT);
   pinMode(pinRX, INPUT);
@@ -37,6 +44,7 @@ void setup() {
   Serial.begin(115200);
   EEPROM.begin(1024);
   mySerial.begin(115200);
+  pixels.begin();
 
   int address = 0;
   char winame[32];
@@ -74,11 +82,13 @@ void setup() {
 
 void loop() {
   if (!wificonnected) {
+    setColor(255, 0, 0);
     dnsServer.processNextRequest();
     server.handleClient();
     delay(1);
   } else {
 
+    setColor(0, 255, 0);
     digitalWrite(pinBarcodeTrigger, HIGH);
     if (mySerial.available()) {
       c = mySerial.read();
@@ -186,4 +196,12 @@ void handleRoot() {
   server.send(200, "text/html", html);
 
   Serial.println("Root page shown");
+}
+
+void setColor(int r, int g, int b) {
+  for (int i = 0; i < NUMPIXELS; i++) {
+    pixels.setPixelColor(i, pixels.Color(r, g, b));
+    pixels.show();
+    delay(delayval);
+  }
 }
