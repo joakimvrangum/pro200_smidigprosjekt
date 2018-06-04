@@ -47,6 +47,7 @@ void setup() {
   server.on("/input", getInputs);
   server.begin();
 
+  
   String ssid = "test";
   String password = "smaltansikt";
 
@@ -66,7 +67,7 @@ void setup() {
 
 
   address = 32;
-  password.toCharArray(ArrayToStore, password.length()+1);
+  password.toCharArray(arrayToStore, password.length()+1);
   Serial.print("Writing this to EEPROM : ");
   Serial.println(arrayToStore);
 
