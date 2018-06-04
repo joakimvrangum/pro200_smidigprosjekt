@@ -11,6 +11,9 @@ class VareController extends Controller
 {
 	protected $table = 'varer';
 
+	/**
+		Metode for å registrere ny vare i varesortimentet.
+	**/
     public function new(Request $request) {
 		$validator = Validator::make($request->input(),
 			[
@@ -39,11 +42,19 @@ class VareController extends Controller
 		}
     }
 
+
+	/**
+		Metode for å liste alle varene i kolonialen.
+	**/
 	public function ListAll() {
 		$varer = Vare::paginate(20);
 		return view ('listall', compact('varer'));
 	}
 
+
+	/**
+		Metode for å laste opp bilde til varebeskrivelsen. Genererer også thumbnail, og skriver adressen til DB.
+	**/
 	public function LastOppBilde(Request $request)
 	{
 		$fil = $request->file('bilde');

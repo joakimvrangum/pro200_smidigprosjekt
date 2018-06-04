@@ -8,6 +8,9 @@ use App\Vare;
 
 class HandlekurvController extends Controller
 {
+	/**
+		Metode for å liste opp alle varer i handlekurven, og vise disse..
+	**/
 	public function ListAll() {
 		$varer = Handlekurv::all();
 		$pris = 0;
@@ -16,8 +19,12 @@ class HandlekurvController extends Controller
 		}
 		return view ('handlekurv', compact('varer','pris'));
 	}
+	
 
-	public function LeggTil($kunde, $upc) {
+	/**
+		Metode for å legge til varer i handelkurven fra scanneren via GET-request.
+	**/
+	public function LeggTilGetRequest($kunde, $upc) {
 		if (Vare::find($upc)) {
 			$handlekurv = Handlekurv::where('kunde','=',$kunde)->where('upc','=',$upc)->first();
 			if ($handlekurv === NULL) {
@@ -36,7 +43,11 @@ class HandlekurvController extends Controller
 		}
 	}
 
-	public function LeggTilPost(Request $request) {
+
+	/**
+		Metode for å legge til varer i handelkurven fra scanneren via POST-request.
+	**/
+	public function LeggTilPostRequest(Request $request) {
 		$request->validate(
 			[
 				'upc'	=> 'required|max:14',
@@ -67,6 +78,10 @@ class HandlekurvController extends Controller
 			}
 	}
 
+
+	/**
+		Metode for å sette bestilling til bestilt/OK.
+	**/
 	public function BestillingOK($kunde) {
 		Handlekurv::where('kunde','=',$kunde)->delete();
 		return view ('bestilt');

@@ -19,4 +19,4 @@ Route::get('/vare/registrert', function () {return view('register');});
 Route::get('/bestilt/{kunde}', 'HandlekurvController@BestillingOK');
 Route::get('/handlekurv', 'HandlekurvController@ListAll');
 Route::get('/handlekurv/{kunde}/{upc}', 'HandlekurvController@LeggTil');
-Route::post('/handlekurv', 'HandlekurvController@LeggTilPost');
+Route::post('/handlekurv', 'HandlekurvController@LeggTilPostRequest');

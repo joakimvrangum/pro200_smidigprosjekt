@@ -8,7 +8,7 @@
     @endforeach
 
     <hr>
-    <h2>{{ $varer->count() }} varer tilgjengelig i kolonialen.</h2>
+    <h2>{{ $varer->total() }} varer tilgjengelig i kolonialen.</h2>
     </div>
 
     <!-- SIDER (20 varer) -->
