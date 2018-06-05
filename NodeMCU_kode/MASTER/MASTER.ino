@@ -165,7 +165,10 @@ void getInputs() {
             }
             if (WiFi.status() == WL_CONNECTED) {
               wificonnected = true;
-              Serial.println("Connection successful, saving password to EEPROM");
+              Serial.println("Connection successful, saving password to EEPROM after a wipe");
+              for (int i = 0 ; i < EEPROM.length() ; i++) {
+                EEPROM.write(i, 0);
+              }
               int address = 0;
               EEPROM.put(address, bufid);
               address = 100;
