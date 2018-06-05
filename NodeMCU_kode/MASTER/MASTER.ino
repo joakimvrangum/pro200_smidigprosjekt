@@ -87,10 +87,10 @@ void loop() {
     server.handleClient();
     delay(1);
   } else {
-
     setColor(0, 255, 0);
-    digitalWrite(pinBarcodeTrigger, HIGH);
+    //digitalWrite(pinBarcodeTrigger, HIGH);
     if (mySerial.available()) {
+      Serial.println("Serial lest");
       c = mySerial.read();
       if ((int)c == 13) {
         if (WiFi.status() == WL_CONNECTED) {
