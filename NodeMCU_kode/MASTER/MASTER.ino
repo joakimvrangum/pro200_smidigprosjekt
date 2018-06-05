@@ -173,6 +173,8 @@ void getInputs() {
               EEPROM.put(address, bufid);
               address = 100;
               EEPROM.put(address, passid);
+              EEPROM.end();
+              ESP.restart();
             }
           } else {
             Serial.println("You need to provide a password");
