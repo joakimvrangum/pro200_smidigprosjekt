@@ -118,11 +118,13 @@ class HandlekurvController extends Controller
 	**/
 	public function SlettSisteVare($boks_id) {
 		$siste_vare = Handlekurv::where('boks_id','=',$boks_id)->orderBy('updated_at', 'desc')->first();
-		if (($siste_vare->updated_at != $siste_vare->created_at) && ($siste_vare->antall > 1)) {
-			$siste_vare->antall--;
-			$siste_vare->save();
-		} else {
-			$siste_vare->delete();
+		if ($siste_vare != NULL) {
+			if (($siste_vare->updated_at != $siste_vare->created_at) && ($siste_vare->antall > 1)) {
+				$siste_vare->antall--;
+				$siste_vare->save();
+			} else {
+				$siste_vare->delete();
+			}
 		}
 	}
 }
