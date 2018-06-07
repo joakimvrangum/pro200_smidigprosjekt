@@ -19,6 +19,7 @@ bool runOnceAP = false;
 bool runOnceSTAT = false;
 bool APStart = false;
 bool changePass = false;
+bool blinkGreen = false;
 
 DNSServer dnsServer;
 ESP8266WebServer server(80);
@@ -27,7 +28,7 @@ const int pinRX = 5;    //5;  // 3
 const int pinTX = 4;    //4;  // 1
 const int pinBarcodeTrigger = 16;
 
-const int kundeId = 1;
+const int boksID = 1;
 char c;
 String barCode;
 String postData;
@@ -62,11 +63,13 @@ void setup() {
   Serial.println("Starter nettverk prosess");
   WiFi.begin(winame, wipass);
   int count = 0;
-  while (WiFi.status() != WL_CONNECTED && count < 60) {
+  while (WiFi.status() != WL_CONNECTED && count < 20) {
     setColor(0, 0, 255);
-    delay(500);
+    delay(700);
+    setColor(0, 0, 0);
     count++;
     Serial.println("Prøver å koble til nettverk");
+    delay(700);
   }
 
   if ((WiFi.status() == WL_CONNECTED) && (!changePass)) {
@@ -101,7 +104,6 @@ void loop() {
       WiFi.mode(WIFI_AP_STA);
       Serial.println("Satt nettverksmodus til station access point");
       runOnceSTAT = false;
-
       wificonnected = false;
       WiFi.softAP(APID, APPASS);
       IPAddress APIP = WiFi.softAPIP();
@@ -130,17 +132,21 @@ void loop() {
 
     }
     setColor(255, 30, 0);
-    //digitalWrite(pinBarcodeTrigger, HIGH);
+    digitalWrite(pinBarcodeTrigger, HIGH);
     if (mySerial.available()) {
       Serial.println("Serial lest");
-      setColor(100, 0, 100);
       delay(400);
       c = mySerial.read();
+      if ((!blinkGreen) && (barCode.length() > 0) && (barCode.length() < 2)) {
+        setColor(0, 255, 0);
+        delay(500);
+        blinkGreen = true;
+      }
       if ((int)c == 13) {
         if (WiFi.status() == WL_CONNECTED) {
           Serial.print("Sender strekkode til server >> " + barCode + " >> ");
           HTTPClient http;
-          postData = String("kunde=1") + "&upc=" + barCode;
+          postData = String("boks_id=") + boksID + "&upc=" + barCode;
           http.begin("http://www.vrangum.com/kolonial/handlekurv");
           http.addHeader("Content-Type", "application/x-www-form-urlencoded");
           int httpCode = http.POST(postData);
@@ -149,6 +155,20 @@ void loop() {
           http.end();
           c = '\0';
           barCode = "";
+
+          if (response == "OK") {
+            blinkGreen = false;
+            setColor(0, 255, 0);
+            delay(500);
+          } else if (response == "FAIL") {
+            blinkGreen = false;
+            setColor(255, 0, 0);
+            delay(2000);
+          } else if (response == "LEVERING BESTILT") {
+            setColor(255, 255, 255);
+            delay(2000);
+          }
+
         }
       } else {
         if ((' ' <= c) && (c <= '~')) barCode += c;
