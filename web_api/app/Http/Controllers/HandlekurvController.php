@@ -41,7 +41,7 @@ class HandlekurvController extends Controller
 			return "OK";
 		}
 		else if ($upc == 'ANGRE_VARE') {
-			return "ANGRE_VARE";
+			$this->SlettSisteVare($boks_id);
 		}
 		else if ($upc == 'LEVERING') {
 			$this->BestillingOK($boks_id);
@@ -99,7 +99,7 @@ class HandlekurvController extends Controller
 				return "TØMT HANDLEKURV";
 			}
 			else {
-				return "FAILED_ADD";
+				return "FAIL";
 			}
 	}
 
@@ -108,7 +108,20 @@ class HandlekurvController extends Controller
 		Metode for å sette bestilling til bestilt/OK.
 	**/
 	public function BestillingOK($kunde) {
-		Handlekurv::where('boks_id','=',$k)->delete();
+		Handlekurv::where('boks_id','=',$kunde)->delete();
 		return view ('bestilt');
+	}
+
+	/**
+		Metode for å angre siste vare lagt i handlekurven.
+	**/
+	public function SlettSisteVare($boks_id) {
+		$siste_vare = Handlekurv::where('boks_id','=',$boks_id)->orderBy('updated_at', 'desc')->first();
+		if (($siste_vare->updated_at != $siste_vare->created_at) && ($siste_vare->antall > 1)) {
+			$siste_vare->antall--;
+			$siste_vare->save();
+		} else {
+			$siste_vare->delete();
+		}
 	}
 }
