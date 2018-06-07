@@ -3,6 +3,7 @@
 @section('content')
     <!-- VARE -->
     <div>
+
     @if (empty($varer))
         <h4>Handlekurven er tom.</h4>
     @endif

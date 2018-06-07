@@ -18,5 +18,5 @@ Route::post('/vare/ny', 'VareController@new');
 Route::get('/vare/registrert', function () {return view('register');});
 Route::get('/bestilt/{kunde}', 'HandlekurvController@BestillingOK');
 Route::get('/handlekurv', 'HandlekurvController@ListAll');
-Route::get('/handlekurv/{kunde}/{upc}', 'HandlekurvController@LeggTilGetRequest');
+Route::get('/handlekurv/{boks_id}/{upc}', 'HandlekurvController@LeggTilGetRequest');
 Route::post('/handlekurv', 'HandlekurvController@LeggTilPostRequest');

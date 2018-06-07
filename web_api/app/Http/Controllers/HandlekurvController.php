@@ -22,14 +22,15 @@ class HandlekurvController extends Controller
 	
 
 	/**
-		Metode for å legge til varer i handelkurven fra scanneren via GET-request.
+		Metode for å legge til varer i handelkurven fra scanneren via GET-request. Brukt til testing og debugging,
+		ferdig produksjonskode bruker POST.
 	**/
-	public function LeggTilGetRequest($kunde, $upc) {
+	public function LeggTilGetRequest($boks_id, $upc) {
 		if (Vare::find($upc)) {
-			$handlekurv = Handlekurv::where('kunde','=',$kunde)->where('upc','=',$upc)->first();
+			$handlekurv = Handlekurv::where('boks_id','=',$boks_id)->where('upc','=',$upc)->first();
 			if ($handlekurv === NULL) {
 				$handlekurv = New Handlekurv;
-				$handlekurv->kunde = $kunde;
+				$handlekurv->boks_id = $boks_id;
 				$handlekurv->upc = $upc;
 				$handlekurv->antall = 1;
 				$handlekurv->save();
@@ -38,7 +39,19 @@ class HandlekurvController extends Controller
 				$handlekurv->save();
 			}
 			return "OK";
-		} else {
+		}
+		else if ($upc == 'ANGRE_VARE') {
+			return "ANGRE_VARE";
+		}
+		else if ($upc == 'LEVERING') {
+			$this->BestillingOK($boks_id);
+			return "LEVERING BESTILT";
+		}
+		else if ($upc == 'TOM_KURV') {
+			$this->BestillingOK($boks_id);
+			return "TØMT HANDLEKURV";
+		}
+		else {
 			return "FAIL";
 		}
 	}
@@ -50,21 +63,21 @@ class HandlekurvController extends Controller
 	public function LeggTilPostRequest(Request $request) {
 		$request->validate(
 			[
-				'upc'	=> 'required|max:14',
-				'kunde'	=> 'required',
+				'upc'		=> 'required|max:14',
+				'boks_id'	=> 'required',
 			],
 			[
 				'upc.required'		=>	'Strekkode mangler.',
 				'upc.max'			=>	'Strekkoden er for lang.',
-				'kunde.required'	=>	'Mangler kunde-ID.',
-				'kunde.int' 		=>	'Kunde-ID har feil datatype.',
+				'boks_id.required'	=>	'Mangler boks-ID.',
+				'boks_id.int' 		=>	'Boks-ID har feil datatype.',
 			]);
 
 			if (Vare::find($request->upc)) {
-				$handlekurv = Handlekurv::where('kunde','=',$request->kunde)->where('upc','=',$request->upc)->first();
+				$handlekurv = Handlekurv::where('boks_id','=',$request->boks_id)->where('upc','=',$request->upc)->first();
 				if ($handlekurv === NULL) {
 					$handlekurv = New Handlekurv;
-					$handlekurv->kunde = $request->kunde;
+					$handlekurv->boks_id = $request->boks_id;
 					$handlekurv->upc = $request->upc;
 					$handlekurv->antall = 1;
 					$handlekurv->save();
@@ -73,7 +86,19 @@ class HandlekurvController extends Controller
 					$handlekurv->save();
 				}
 				return "OK";
-			} else {
+			}
+			else if ($request->upc == 'ANGRE_VARE') {
+				return "ANGRE_VARE";
+			}
+			else if ($request->upc == 'LEVERING') {
+				$this->BestillingOK($request->boks_id);
+				return "LEVERING BESTILT";
+			}
+			else if ($request->upc == 'TOM_KURV') {
+				$this->BestillingOK($request->boks_id);
+				return "TØMT HANDLEKURV";
+			}
+			else {
 				return "FAILED_ADD";
 			}
 	}
@@ -83,7 +108,7 @@ class HandlekurvController extends Controller
 		Metode for å sette bestilling til bestilt/OK.
 	**/
 	public function BestillingOK($kunde) {
-		Handlekurv::where('kunde','=',$kunde)->delete();
+		Handlekurv::where('boks_id','=',$k)->delete();
 		return view ('bestilt');
 	}
 }

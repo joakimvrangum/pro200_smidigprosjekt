@@ -47,7 +47,7 @@ class VareController extends Controller
 		Metode for å liste alle varene i kolonialen.
 	**/
 	public function ListAll() {
-		$varer = Vare::paginate(10);
+		$varer = Vare::orderBy('vare_navn', 'asc')->paginate(10);
 		return view ('listall', compact('varer'));
 	}
 
