@@ -19,6 +19,7 @@ bool runOnceAP = false;
 bool runOnceSTAT = false;
 bool APStart = false;
 bool changePass = false;
+bool blinkGreen = false;
 
 DNSServer dnsServer;
 ESP8266WebServer server(80);
@@ -27,7 +28,7 @@ const int pinRX = 5;    //5;  // 3
 const int pinTX = 4;    //4;  // 1
 const int pinBarcodeTrigger = 16;
 
-const int kundeId = 1;
+const int boksID = 1;
 char c;
 String barCode;
 String postData;
@@ -62,11 +63,13 @@ void setup() {
   Serial.println("Starter nettverk prosess");
   WiFi.begin(winame, wipass);
   int count = 0;
-  while (WiFi.status() != WL_CONNECTED && count < 60) {
+  while (WiFi.status() != WL_CONNECTED && count < 20) {
     setColor(0, 0, 255);
-    delay(500);
+    delay(700);
+    setColor(0, 0, 0);
     count++;
     Serial.println("Prøver å koble til nettverk");
+    delay(700);
   }
 
   if ((WiFi.status() == WL_CONNECTED) && (!changePass)) {
@@ -101,7 +104,6 @@ void loop() {
       WiFi.mode(WIFI_AP_STA);
       Serial.println("Satt nettverksmodus til station access point");
       runOnceSTAT = false;
-
       wificonnected = false;
       WiFi.softAP(APID, APPASS);
       IPAddress APIP = WiFi.softAPIP();
@@ -130,17 +132,21 @@ void loop() {
 
     }
     setColor(255, 30, 0);
-    //digitalWrite(pinBarcodeTrigger, HIGH);
+    digitalWrite(pinBarcodeTrigger, HIGH);
     if (mySerial.available()) {
       Serial.println("Serial lest");
-      setColor(100, 0, 100);
       delay(400);
       c = mySerial.read();
+      if ((!blinkGreen) && (barCode.length() > 0) && (barCode.length() < 2)) {
+        setColor(0, 255, 0);
+        delay(500);
+        blinkGreen = true;
+      }
       if ((int)c == 13) {
         if (WiFi.status() == WL_CONNECTED) {
           Serial.print("Sender strekkode til server >> " + barCode + " >> ");
           HTTPClient http;
-          postData = String("kunde=1") + "&upc=" + barCode;
+          postData = String("boks_id=") + boksID + "&upc=" + barCode;
           http.begin("http://www.vrangum.com/kolonial/handlekurv");
           http.addHeader("Content-Type", "application/x-www-form-urlencoded");
           int httpCode = http.POST(postData);
@@ -149,6 +155,20 @@ void loop() {
           http.end();
           c = '\0';
           barCode = "";
+
+          if (response == "OK") {
+            blinkGreen = false;
+            setColor(0, 255, 0);
+            delay(500);
+          } else if (response == "FAIL") {
+            blinkGreen = false;
+            setColor(255, 0, 0);
+            delay(2000);
+          } else if (response == "LEVERING BESTILT") {
+            setColor(255, 255, 255);
+            delay(2000);
+          }
+
         }
       } else {
         if ((' ' <= c) && (c <= '~')) barCode += c;
@@ -178,69 +198,36 @@ void getInputs() {
     char passid[64];
     ssid.toCharArray(bufid, ssid.length() + 1);
     password.toCharArray(passid, password.length() + 1);
-
-    //Lager en liste over nettverk
-    int networks = WiFi.scanNetworks();
-
-    for (int i = 0; i < networks; i++) {
-      Serial.print("Name of network : ");
-      Serial.println(WiFi.SSID(i));
-      Serial.print("Strength : ");
-      Serial.println(WiFi.RSSI(i));
-      //Passord eller ikke
-      Serial.print("Encrypted with : ");
-      Serial.println((WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*");
-      bool encrypted = (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? false : true;
-      if (ssid == WiFi.SSID(i)) {
-
-        Serial.println("NETWORK FOUND");
-        if (encrypted) {
-          Serial.println("Password needed");
-          if (password != "") {
-            WiFi.begin(bufid, passid);
-            int count = 0;
-            while (WiFi.status() != WL_CONNECTED && count < 60) {
-              delay(500);
-              Serial.println("connecting");
-              count++;
-            }
-            if (WiFi.status() == WL_CONNECTED) {
-              wificonnected = true;
-
-              Serial.println("Connection successful, saving password to EEPROM after a wipe");
-              for (int i = 0 ; i < EEPROM.length() ; i++) {
-                EEPROM.write(i, 0);
-              }
-
-              int address = 0;
-              EEPROM.put(address, bufid);
-              address = 100;
-              EEPROM.put(address, passid);
-              EEPROM.end();
-              ESP.restart();
-            }
-          } else {
-            Serial.println("You need to provide a password");
-          }
-        } else {
-          Serial.println("You dont need a password here, but you do need to add some code to connect to wifi");
-        }
-      } else {
-        Serial.println("Not the right network");
-      }
-      Serial.println();
-      Serial.println();
+    WiFi.begin(bufid, passid);
+    int count = 0;
+    while (WiFi.status() != WL_CONNECTED && count < 60) {
+      delay(500);
+      Serial.println("connecting");
+      count++;
     }
-    if (!wificonnected) {
-      Serial.println("Could not find the network");
+    if (WiFi.status() == WL_CONNECTED) {
+
+      Serial.println("Connection successful, saving password to EEPROM after a wipe");
+      for (int i = 0 ; i < EEPROM.length() ; i++) {
+        EEPROM.write(i, 0);
+      }
+
+      int address = 0;
+      EEPROM.put(address, bufid);
+      address = 100;
+      EEPROM.put(address, passid);
+      EEPROM.end();
+      Serial.println("Restarting ESP");
+      ESP.restart();
+    }else{
+      Serial.println("Could not connect to network");
     }
   }
-  Serial.println("Inputs updated");
 }
 
 void handleRoot() {
   //String html = "<!DOCTYPE HTML> <html> <head> </head> <body> <h1>Welcome to KOLOSVISJ</h1> </body> </html>";
-  String html = "<!DOCTYPE HTML><html><head> <title>KOLONIAL SVISJ SETUP</title> <meta charset=\"UTF-8\"> <meta name=\"author\" content=\"Gruppe 10\"> </head><body> <h1>WIFI AND PASSWORD</h1> <input type=\"text\" name=\"WIFI\" id=\"WIFI\"> <input type=\"text\" name=\"PASSWORD\" id=\"PASSWORD\"> <button onclick=\"submit()\">Submit</button> <p id=\"demo\"></p> <script>function submit() { var wifiname = document.getElementById(\"WIFI\").value; var wifipassword = document.getElementById(\"PASSWORD\").value; var url = \"/input\"; var params = \"wifiname=\"+wifiname+\"&wifipass=\"+wifipassword; var xmlHTTP = new XMLHttpRequest(); xmlHTTP.open(\"GET\", url+\"?\"+params, true); xmlHTTP.send(null);}</script> </body></html>";
+  String html = "<!DOCTYPE HTML><html> <head> <title>Kolonial.no Svisj oppsett</title> <meta charset=\"UTF-8\"> <meta name=\"author\" content=\"Gruppe 10\"> <style> #overskrift{ max-width: 600px; margin: auto; } .content{ max-width: 420px; margin: auto; } p{ margin-bottom: 0px; } </style> </head> <body> <h1 id=\"overskrift\">Vennligst legg til internett navn og passord</h1> <div class=\"content\"> <table> <tr > <th><p>WIFI NAVN</p></th> <th><p>WIFI PASSORD</p></th> </tr> <tr> <th><input type=\"text\" name=\"WIFI\" id=\"WIFI\" autofocus></th> <th><input type=\"text\" name=\"PASSWORD\" id=\"PASSWORD\" ></th> <th><button onclick=\"submit()\">Send oppdatering</button></th> </tr> </table> </div> <p id=\"demo\"></p> <script> function submit() { var wifiname = document.getElementById(\"WIFI\").value; var wifipassword = document.getElementById(\"PASSWORD\").value; if((wifiname.length < 32 && wifiname.length > 0) && (wifipassword.length < 64)){ var url = \"/input\"; var params = \"wifiname=\"+wifiname+\"&wifipass=\"+wifipassword; var xmlHTTP = new XMLHttpRequest(); xmlHTTP.open(\"GET\", url+\"?\"+params, true); xmlHTTP.send(null); alert(\"Vi oppdaterer nå wifi på din Kolonial.no Svisj\"); }else{ alert(\"Navn kan ikke være lenger enn 31 symboler og passord kan ikke være lenger enn 63 symboler\"); } } </script> </body></html>";
   server.send(200, "text/html", html);
 
   Serial.println("Root page shown");
