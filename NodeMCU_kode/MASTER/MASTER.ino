@@ -15,6 +15,10 @@ const char *APPASS = "";
 
 const byte DNS_PORT = 53;
 bool wificonnected = false;
+bool runOnceAP = false;
+bool runOnceSTAT = false;
+bool APStart = false;
+bool changePass = false;
 
 DNSServer dnsServer;
 ESP8266WebServer server(80);
@@ -41,7 +45,7 @@ void setup() {
   pinMode(pinRX, INPUT);
   pinMode(pinTX, OUTPUT);
 
-  Serial.begin(115200);
+  Serial.begin(9600);
   EEPROM.begin(1024);
   mySerial.begin(115200);
   pixels.begin();
@@ -50,17 +54,24 @@ void setup() {
   char winame[32];
   char wipass[64];
   EEPROM.get(address, winame);
+  Serial.println(winame);
   address = 100;
   EEPROM.get(address, wipass);
+  Serial.println(wipass);
 
+  Serial.println("Starter nettverk prosess");
   WiFi.begin(winame, wipass);
   int count = 0;
   while (WiFi.status() != WL_CONNECTED && count < 60) {
+    setColor(0, 0, 255);
     delay(500);
     count++;
+    Serial.println("Prøver å koble til nettverk");
   }
 
-  if (WiFi.status() == WL_CONNECTED) {
+  if ((WiFi.status() == WL_CONNECTED) && (!changePass)) {
+    setColor(0, 255, 0);
+    delay(2500);
     wificonnected = true;
     Serial.println();
     Serial.print("The wifi we are connected to is called : ");
@@ -68,6 +79,8 @@ void setup() {
     Serial.print("The wifi's password is saved in plain text as : ");
     Serial.println(wipass);
   } else {
+    setColor(255, 0, 0);
+    delay(2500);
     wificonnected = false;
     WiFi.softAP(APID, APPASS);
     IPAddress APIP = WiFi.softAPIP();
@@ -77,20 +90,51 @@ void setup() {
     server.on("/", handleRoot);
     server.on("/input", getInputs);
     server.begin();
+    APStart = true;
   }
 }
 
 void loop() {
-  if (!wificonnected) {
-    setColor(255, 0, 0);
+  if (WiFi.status() != WL_CONNECTED) {
+    if (!runOnceAP && !APStart) {
+      runOnceAP = true;
+      WiFi.mode(WIFI_AP_STA);
+      Serial.println("Satt nettverksmodus til station access point");
+      runOnceSTAT = false;
+
+      wificonnected = false;
+      WiFi.softAP(APID, APPASS);
+      IPAddress APIP = WiFi.softAPIP();
+      dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
+      Serial.println("APIP er");
+      Serial.println(APIP);
+      server.on("/", handleRoot);
+      server.on("/input", getInputs);
+      server.begin();
+
+    }
+    setColor(0, 0, 255);
     dnsServer.processNextRequest();
     server.handleClient();
     delay(1);
   } else {
+    if (!runOnceSTAT) {
+      runOnceSTAT = true;
+      APStart = false;
+      WiFi.mode(WIFI_STA);
+      Serial.println("Satt nettverksmodus til station");
+      runOnceAP = false;
 
-    setColor(0, 255, 0);
-    digitalWrite(pinBarcodeTrigger, HIGH);
+      dnsServer.stop();
+      server.close();
+
+    }
+    setColor(255, 30, 0);
+    //digitalWrite(pinBarcodeTrigger, HIGH);
     if (mySerial.available()) {
+      Serial.println("Serial lest");
+      setColor(100, 0, 100);
+      delay(400);
       c = mySerial.read();
       if ((int)c == 13) {
         if (WiFi.status() == WL_CONNECTED) {
@@ -116,9 +160,6 @@ void loop() {
 }
 
 void getInputs() {
-  //Hvis denne siden blir lastet betyr det at noen enten har gått inn på 192.168.4.1/input på egenhånd
-  //Eller så har data blitt submittet
-  //Må i så fall hente data fra siden
   Serial.println("We are outside of if statement");
 
   if (!wificonnected && server.arg("wifiname") != "") {
@@ -165,11 +206,18 @@ void getInputs() {
             }
             if (WiFi.status() == WL_CONNECTED) {
               wificonnected = true;
-              Serial.println("Connection successful, saving password to EEPROM");
+
+              Serial.println("Connection successful, saving password to EEPROM after a wipe");
+              for (int i = 0 ; i < EEPROM.length() ; i++) {
+                EEPROM.write(i, 0);
+              }
+
               int address = 0;
               EEPROM.put(address, bufid);
               address = 100;
               EEPROM.put(address, passid);
+              EEPROM.end();
+              ESP.restart();
             }
           } else {
             Serial.println("You need to provide a password");
