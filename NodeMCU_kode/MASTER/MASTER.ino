@@ -198,64 +198,31 @@ void getInputs() {
     char passid[64];
     ssid.toCharArray(bufid, ssid.length() + 1);
     password.toCharArray(passid, password.length() + 1);
-
-    //Lager en liste over nettverk
-    int networks = WiFi.scanNetworks();
-
-    for (int i = 0; i < networks; i++) {
-      Serial.print("Name of network : ");
-      Serial.println(WiFi.SSID(i));
-      Serial.print("Strength : ");
-      Serial.println(WiFi.RSSI(i));
-      //Passord eller ikke
-      Serial.print("Encrypted with : ");
-      Serial.println((WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*");
-      bool encrypted = (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? false : true;
-      if (ssid == WiFi.SSID(i)) {
-
-        Serial.println("NETWORK FOUND");
-        if (encrypted) {
-          Serial.println("Password needed");
-          if (password != "") {
-            WiFi.begin(bufid, passid);
-            int count = 0;
-            while (WiFi.status() != WL_CONNECTED && count < 60) {
-              delay(500);
-              Serial.println("connecting");
-              count++;
-            }
-            if (WiFi.status() == WL_CONNECTED) {
-              wificonnected = true;
-
-              Serial.println("Connection successful, saving password to EEPROM after a wipe");
-              for (int i = 0 ; i < EEPROM.length() ; i++) {
-                EEPROM.write(i, 0);
-              }
-
-              int address = 0;
-              EEPROM.put(address, bufid);
-              address = 100;
-              EEPROM.put(address, passid);
-              EEPROM.end();
-              ESP.restart();
-            }
-          } else {
-            Serial.println("You need to provide a password");
-          }
-        } else {
-          Serial.println("You dont need a password here, but you do need to add some code to connect to wifi");
-        }
-      } else {
-        Serial.println("Not the right network");
-      }
-      Serial.println();
-      Serial.println();
+    WiFi.begin(bufid, passid);
+    int count = 0;
+    while (WiFi.status() != WL_CONNECTED && count < 60) {
+      delay(500);
+      Serial.println("connecting");
+      count++;
     }
-    if (!wificonnected) {
-      Serial.println("Could not find the network");
+    if (WiFi.status() == WL_CONNECTED) {
+
+      Serial.println("Connection successful, saving password to EEPROM after a wipe");
+      for (int i = 0 ; i < EEPROM.length() ; i++) {
+        EEPROM.write(i, 0);
+      }
+
+      int address = 0;
+      EEPROM.put(address, bufid);
+      address = 100;
+      EEPROM.put(address, passid);
+      EEPROM.end();
+      Serial.println("Restarting ESP");
+      ESP.restart();
+    }else{
+      Serial.println("Could not connect to network");
     }
   }
-  Serial.println("Inputs updated");
 }
 
 void handleRoot() {
