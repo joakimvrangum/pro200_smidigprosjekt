@@ -88,6 +88,7 @@ class HandlekurvController extends Controller
 				return "OK";
 			}
 			else if ($request->upc == 'ANGRE_VARE') {
+				$this->SlettSisteVare($request->boks_id);
 				return "ANGRE_VARE";
 			}
 			else if ($request->upc == 'LEVERING') {
