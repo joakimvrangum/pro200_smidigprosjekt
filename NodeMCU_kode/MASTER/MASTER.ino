@@ -10,7 +10,7 @@
 String SSIDName;
 String SSIDPassword;
 
-const char *APID = "Svisj - Oppsett";
+const char *APID = "Svisj - Oppsett - Joakim";
 const char *APPASS = "";
 
 const byte DNS_PORT = 53;
