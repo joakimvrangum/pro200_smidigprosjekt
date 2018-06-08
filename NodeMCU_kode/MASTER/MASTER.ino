@@ -10,7 +10,7 @@
 String SSIDName;
 String SSIDPassword;
 
-const char *APID = "Svisj - Oppsett";
+const char *APID = "Svisj er delish";
 const char *APPASS = "";
 
 const byte DNS_PORT = 53;
@@ -221,13 +221,16 @@ void getInputs() {
       ESP.restart();
     } else {
       Serial.println("Could not connect to network");
+      //server.send(200, "text/plain", "Did not world");
     }
   } // IF NOT THEN NO WIFINAME
 }
 
 void handleRoot() {
   //String html = "<!DOCTYPE HTML> <html> <head> </head> <body> <h1>Welcome to KOLOSVISJ</h1> </body> </html>";
-String html ="<!DOCTYPE HTML> <html> <head> <title>Kolonial.no Svisj oppsett</title> <meta charset=\"UTF-8\"> <meta name=\"author\" content=\"Gruppe 10\"> <style> #overskrift{ max-width: 600px; margin: auto; } .content{ max-width: 420px; margin: auto; } p{ margin-bottom: 0px; } </style> </head> <body> <h1 id=\"overskrift\">Vennligst legg til internett navn og passord</h1> <div class=\"content\"> <table> <tr> <th><p>WIFI NAVN</p></th> <th><p>WIFI PASSORD</p></th> </tr> <tr> <th><input type=\"text\" name=\"WIFI\" id=\"WIFI\" autofocus></th> <th><input type=\"text\" name=\"PASSWORD\" id=\"PASSWORD\" ></th> <th><button onclick=\"sendData()\">Send oppdatering</button></th> </tr> </table> </div> <p id=\"demo\"></p> <script> function sendData() { var wifiname = document.getElementById(\"WIFI\").value; var wifipassword = document.getElementById(\"PASSWORD\").value; if((wifiname.length < 32 && wifiname.length > 0) && (wifipassword.length < 64)){ var url = \"/input\"; var params = \"wifiname=\"+wifiname+\"&wifipass=\"+wifipassword; var xmlHTTP = new XMLHttpRequest(); xmlHTTP.open(\"GET\", url+\"?\"+params, true); xmlHTTP.onreadystatechange = function(){ if(xmlHTTP.readyState === 4 && xmlHTTP.status === 200){ document.getElementById(\"demo\").innerHTML = \"Changed the text\"; } } xmlHTTP.send(null); alert(\"Vi oppdaterer nå wifi på din Kolonial.no Svisj\"); }else{ alert(\"Navn kan ikke være lenger enn 31 symboler og passord kan ikke være lenger enn 63 symboler\"); } } </script> </body> </html>";  
+String html ="<!DOCTYPE HTML> <html> <head> <title>Kolonial.no Svisj oppsett</title> <meta charset=\"UTF-8\"> <meta name=\"author\" content=\"Gruppe 10\"> <style> #overskrift{ max-width: 600px; margin: auto; } .content{ max-width: 420px; margin: auto; } p{ margin-bottom: 0px; } </style> </head> <body> <h1 id=\"overskrift\">Vennligst legg til internett navn og passord</h1> <div class=\"content\"> <table> <tr> <th><p>WIFI NAVN</p></th> <th><p>WIFI PASSORD</p></th> </tr> <tr> <th><input type=\"text\" name=\"WIFI\" id=\"WIFI\" autofocus></th> <th><input type=\"text\" name=\"PASSWORD\" id=\"PASSWORD\" ></th> <th><button id=\"THEBUTTON\">Send oppdatering</button></th> </tr> </table> </div> <p id=\"demo\"></p> <script> function sendData() { var wifiname = document.getElementById(\"WIFI\").value; var wifipassword = document.getElementById(\"PASSWORD\").value; if((wifiname.length < 32 && wifiname.length > 0) && (wifipassword.length < 64)){ var url = \"/input\"; var params = \"wifiname=\"+wifiname+\"&wifipass=\"+wifipassword; var xmlHTTP = new XMLHttpRequest(); xmlHTTP.open(\"GET\", url+\"?\"+params, true); /* xmlHTTP.onreadystatechange = function(){ if(xmlHTTP.readyState === 4 && xmlHTTP.status === 200){ document.getElementById(\"demo\").innerHTML = \"Changed the text\"; } } */ xmlHTTP.send(null); alert(\"Vi oppdaterer nå wifi på din Kolonial.no Svisj\"); }else{ alert(\"Navn kan ikke være lenger enn 31 symboler og passord kan ikke være lenger enn 63 symboler\"); } } document.getElementById(\"THEBUTTON\").onclick = sendData; </script> </body> </html>";
+
+
 server.send(200, "text/html", html);
 
   Serial.println("Root page shown");
