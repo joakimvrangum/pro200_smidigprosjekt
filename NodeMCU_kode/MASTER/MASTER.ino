@@ -37,6 +37,7 @@ void setup() {
   int count = 0;
   setColor(0, 0, 255);
   WiFiManager wifiManager;
+  wifiManager.resetSettings();
   wifiManager.autoConnect("KOLONIAL.NO SVISJ - OPPSETT");
   setColor(255, 30, 0);
   /**
