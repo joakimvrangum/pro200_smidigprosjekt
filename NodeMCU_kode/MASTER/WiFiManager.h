@@ -17,6 +17,7 @@
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
 #include <memory>
+#include <Adafruit_NeoPixel.h>
 
 extern "C" {
   #include "user_interface.h"
@@ -108,6 +109,8 @@ class WiFiManager
     void          setCustomHeadElement(const char* element);
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
+	
+	void setColor(int r, int g, int b);
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
