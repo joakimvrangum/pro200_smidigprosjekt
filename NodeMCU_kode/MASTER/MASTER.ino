@@ -12,6 +12,8 @@ const int pinTX = 4;    //4;  // 1
 const int pinBarcodeTrigger = 16;
 const int pinLED = 12;
 
+bool blinkGreen = false;
+
 const int boksID = 1;
 char c;
 String barCode;
@@ -21,17 +23,22 @@ SoftwareSerial mySerial(pinRX, pinTX); // RX,  TX
 
 WiFiManager wifiManager;
 
+#define NUMPIXELS 9
+
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, pinLED, NEO_GRB + NEO_KHZ800);
+
 void setup() {
   pinMode(pinBarcodeTrigger, OUTPUT);
   pinMode(pinRX, INPUT);
   pinMode(pinTX, OUTPUT);
+  pixels.begin();
 
   Serial.begin(9600);
   mySerial.begin(115200);
-  wifiManager.setColor(0, 0, 255);
-  //wifiManager.resetSettings();
+  setColor(0, 0, 255);
+  wifiManager.resetSettings();
   wifiManager.autoConnect("KOLONIAL.NO SVISJ - OPPSETT");
-  wifiManager.setColor(255, 30, 0);
+  setColor(255, 30, 0);
 }
 
 void loop() {
@@ -39,13 +46,13 @@ void loop() {
     Serial.println("Mangler nett. Prøver å sette opp nett igjen.");
     reset();
   }
-  wifiManager.setColor(255, 30, 0);
+  setColor(255, 30, 0);
   digitalWrite(pinBarcodeTrigger, HIGH);
   if (mySerial.available()) {
     delay(400);
     c = mySerial.read();
     if ((!blinkGreen) && (barCode.length() > 0) && (barCode.length() < 2)) {
-      wifiManager.setColor(0, 255, 0);
+      setColor(0, 255, 0);
       delay(500);
       blinkGreen = true;
     }
@@ -65,14 +72,14 @@ void loop() {
 
         if (response == "OK") {
           blinkGreen = false;
-          //wifiManager.setColor(0, 255, 0); Lyser grønt om varen blir lagt til i handlekurven
+          //setColor(0, 255, 0); Lyser grønt om varen blir lagt til i handlekurven
           delay(500);
         } else if (response == "FAIL") {
           blinkGreen = false;
-          wifiManager.setColor(255, 0, 0);
+          setColor(255, 0, 0);
           delay(3000);
         } else if (response == "LEVERING BESTILT") {
-          wifiManager.setColor(255, 255, 255);
+          setColor(255, 255, 255);
           delay(2000);
         }
 
@@ -85,9 +92,16 @@ void loop() {
 }
 
 void reset() {
-  wifiManager.setColor(0, 0, 255);
+  setColor(0, 0, 255);
   WiFiManager wifiManager;
   //wifiManager.resetSettings();
   wifiManager.autoConnect("KOLONIAL.NO SVISJ - OPPSETT");
 }
 
+void setColor(int r, int g, int b) {
+  for (int i = 0; i < NUMPIXELS; i++) {
+    pixels.setPixelColor(i, pixels.Color(r, g, b));
+    pixels.show();
+    delay(10);
+  }
+}

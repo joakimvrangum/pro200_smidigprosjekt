@@ -12,11 +12,6 @@
 
 #include "WiFiManager.h"
 
-const int pinLED = 12;
-#define NUMPIXELS 9
-
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, pinLED, NEO_GRB + NEO_KHZ800);
-
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _id = NULL;
   _placeholder = NULL;
@@ -66,7 +61,7 @@ const char* WiFiManagerParameter::getCustomHTML() {
 }
 
 WiFiManager::WiFiManager() {
-	pixels.begin();
+	
 }
 
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
@@ -172,15 +167,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   setupConfigPortal();
 
   while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
-	  setColor(0, 0, 255);
-	  delay(700);
-	  setColor(0, 0, 0);
-	  delay(700);
     //DNS
     dnsServer->processNextRequest();
     //HTTP
     server->handleClient();
-
 
     if (connect) {
       connect = false;
@@ -764,12 +754,4 @@ String WiFiManager::toStringIp(IPAddress ip) {
   }
   res += String(((ip >> 8 * 3)) & 0xFF);
   return res;
-}
-
-void WiFiManager::setColor(int r, int g, int b) {
-  for (int i = 0; i < NUMPIXELS; i++) {
-    pixels.setPixelColor(i, pixels.Color(r, g, b));
-    pixels.show();
-    delay(10);
-  }
 }
