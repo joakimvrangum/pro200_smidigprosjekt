@@ -31,9 +31,9 @@ const char HTTP_PORTAL_OPTIONS[] PROGMEM  = "<form action=\"/wifi\" method=\"get
 const char HTTP_ITEM[] PROGMEM            = "<div><a href='#p' onclick='c(this)'>{v}</a>&nbsp;<span class='q {i}'>{r}%</span></div>";
 const char HTTP_FORM_START[] PROGMEM      = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><br/><input id='p' name='p' length=64 type='password' placeholder='password'><br/>";
 const char HTTP_FORM_PARAM[] PROGMEM      = "<br/><input id='{i}' name='{n}' length={l} placeholder='{p}' value='{v}' {c}>";
-const char HTTP_FORM_END[] PROGMEM        = "<br/><button type='submit'>save</button></form>";
+const char HTTP_FORM_END[] PROGMEM        = "<br/><button type='submit'>Lagre</button></form>";
 const char HTTP_SCAN_LINK[] PROGMEM       = "<br/><div class=\"c\"><a href=\"/wifi\">Skann nettverk</a></div>";
-const char HTTP_SAVED[] PROGMEM           = "<div>Nettverksnavn og passord lagret!<br />Setter opp internett for Kolonial.no Svisj. Boksen vil lyse oransj hvis vellykket.<br />Hvis den feiler, koble til Oppsett-nettverket igjen, og send inn på nytt.</div>";
+const char HTTP_SAVED[] PROGMEM           = "<div>Nettverksnavn og passord lagret!<br />Setter opp internett for Kolonial.no Svisj. Boksen vil lyse oransj hvis vellykket.<br />Hvis den feiler, koble til Oppsett-nettverket igjen, og send inn en gang til.</div>";
 const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
 #define WIFI_MANAGER_MAX_PARAMS 10
