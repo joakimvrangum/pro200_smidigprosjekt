@@ -7,34 +7,34 @@
 #include <SoftwareSerial.h>
 #include <WiFiManager.h>
 
-const int pinRX = 5;    //5;  // 3
-const int pinTX = 4;    //4;  // 1
+#define NUMPIXELS 9
+
+const int pinRX = 5;
+const int pinTX = 4;
 const int pinBarcodeTrigger = 16;
 const int pinLED = 12;
 
-bool blinkGreen = false;
+const int boksID = 1; // Knyttes opp mot kundeID i databasen
 
-const int boksID = 1;
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, pinLED, NEO_GRB + NEO_KHZ800);
+SoftwareSerial mySerial(pinRX, pinTX);
+WiFiManager wifiManager;
+
 char c;
 String barCode;
 String postData;
 
-SoftwareSerial mySerial(pinRX, pinTX); // RX,  TX
-
-WiFiManager wifiManager;
-
-#define NUMPIXELS 9
-
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, pinLED, NEO_GRB + NEO_KHZ800);
+bool blinkGreen = false;
 
 void setup() {
   pinMode(pinBarcodeTrigger, OUTPUT);
   pinMode(pinRX, INPUT);
   pinMode(pinTX, OUTPUT);
+  
   pixels.begin();
-
   Serial.begin(9600);
   mySerial.begin(115200);
+  
   setColor(0, 0, 255);
   wifiManager.resetSettings();
   wifiManager.autoConnect("KOLONIAL.NO SVISJ - OPPSETT");
@@ -42,12 +42,17 @@ void setup() {
 }
 
 void loop() {
+
+//Reconnecter til nettverk dersom den ikke er på eller har fallt ut
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Mangler nett. Prøver å sette opp nett igjen.");
-    reset();
+    reconnect();
   }
+  
   setColor(255, 30, 0);
   digitalWrite(pinBarcodeTrigger, HIGH);
+  
+  //Tar imot data fra skanneren
   if (mySerial.available()) {
     delay(400);
     c = mySerial.read();
@@ -56,6 +61,8 @@ void loop() {
       delay(500);
       blinkGreen = true;
     }
+	
+	//Bruker dataen fra skanneren og sender en post request til serveren
     if ((int)c == 13) {
       if (WiFi.status() == WL_CONNECTED) {
         Serial.print("Sender strekkode til server >> " + barCode + " >> ");
@@ -70,6 +77,7 @@ void loop() {
         c = '\0';
         barCode = "";
 
+		//Setter farge på LED'ene utifra responsen fra server
         if (response == "OK") {
           blinkGreen = false;
           //setColor(0, 255, 0); Lyser grønt om varen blir lagt til i handlekurven
@@ -85,19 +93,22 @@ void loop() {
 
       }
     } else {
+		
       if ((' ' <= c) && (c <= '~')) barCode += c;
+	  
     }
   }
   delay(400);
 }
 
-void reset() {
+//Metode for å reconnecte til nettverk
+void reconnect() {
   setColor(0, 0, 255);
   WiFiManager wifiManager;
-  //wifiManager.resetSettings();
   wifiManager.autoConnect("KOLONIAL.NO SVISJ - OPPSETT");
 }
 
+//Metode for å velge farge på RGB LED'ene
 void setColor(int r, int g, int b) {
   for (int i = 0; i < NUMPIXELS; i++) {
     pixels.setPixelColor(i, pixels.Color(r, g, b));
