@@ -41,15 +41,11 @@ void setup() {
     wifiManager.setColor(255, 0, 0);
     delay(2000);
   }
-
   if (WiFi.status() == WL_CONNECTED) {
     wifiManager.setColor(0, 255, 0);
     delay(2000);
   }
-
   wifiManager.setColor(255, 30, 0);
-
-  Serial.println("FERDIG I SETUP");
 }
 
 void loop() {
