@@ -34,7 +34,7 @@ void setup() {
   mySerial.begin(115200);
 
   wifiManager.setColor(0, 0, 255);
-  //wifiManager.resetSettings();
+  wifiManager.resetSettings();
   wifiManager.autoConnect("KOLONIAL.NO SVISJ - OPPSETT");
 
   if (WiFi.status() != WL_CONNECTED) {
@@ -60,7 +60,7 @@ void loop() {
 
   digitalWrite(pinBarcodeTrigger, HIGH);
 
-  if (barCode.length() > 0) {
+  if (barCode.length() > 1) {
     if (currentMillis - previousMillis > interval) {
       // save the last time you blinked the LED
       previousMillis = currentMillis;
@@ -80,7 +80,7 @@ void loop() {
       blinkGreen = true;
     }
 
-    if (scanningBlink) {
+    if (!scanningBlink) {
       wifiManager.setColor(255, 30, 0);
     } else {
       wifiManager.setColor(0, 0, 0);
