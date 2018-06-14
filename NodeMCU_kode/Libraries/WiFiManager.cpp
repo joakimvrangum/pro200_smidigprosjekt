@@ -12,6 +12,12 @@
 
 #include "WiFiManager.h"
 
+#define NUMPIXELS 9
+const int pinLED = 12;
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, pinLED, NEO_GRB + NEO_KHZ800);
+
+int count = 0;
+
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _id = NULL;
   _placeholder = NULL;
@@ -61,7 +67,7 @@ const char* WiFiManagerParameter::getCustomHTML() {
 }
 
 WiFiManager::WiFiManager() {
-	
+	pixels.begin();
 }
 
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
@@ -172,6 +178,16 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     //HTTP
     server->handleClient();
 
+	Serial.println(count);
+	
+		if (count < 7) {
+			setColor(0, 0, 0);
+		} else if ((count > 7) && (count < 14)) {
+            setColor(0, 0, 255);
+		} else if (count > 15) {
+			count = 0;
+		}
+	
     if (connect) {
       connect = false;
       delay(2000);
@@ -180,6 +196,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
         DEBUG_WM(F("Failed to connect."));
+		setColor(255, 0, 0);
+		delay(2000);
+		setColor(0, 0, 255);
       } else {
         //connected
         WiFi.mode(WIFI_STA);
@@ -202,6 +221,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       }
     }
     yield();
+	count++;
   }
 
   server.reset();
@@ -754,4 +774,13 @@ String WiFiManager::toStringIp(IPAddress ip) {
   }
   res += String(((ip >> 8 * 3)) & 0xFF);
   return res;
+}
+
+//Metode for å velge farge på RGB LED'ene
+void WiFiManager::setColor(int r, int g, int b) {
+  for (int i = 0; i < NUMPIXELS; i++) {
+    pixels.setPixelColor(i, pixels.Color(r, g, b));
+    pixels.show();
+    delay(10);
+  }
 }

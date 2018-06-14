@@ -7,62 +7,90 @@
 #include <SoftwareSerial.h>
 #include <WiFiManager.h>
 
-#define NUMPIXELS 9
-
 const int pinRX = 5;
 const int pinTX = 4;
 const int pinBarcodeTrigger = 16;
-const int pinLED = 12;
 
 const int boksID = 1; // Knyttes opp mot kundeID i databasen
 
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, pinLED, NEO_GRB + NEO_KHZ800);
 SoftwareSerial mySerial(pinRX, pinTX);
 WiFiManager wifiManager;
 
 char c;
 String barCode;
 String postData;
-
 bool blinkGreen = false;
+long previousMillis = 0;
+long interval = 500;
+
+bool scanningBlink = false;
 
 void setup() {
   pinMode(pinBarcodeTrigger, OUTPUT);
   pinMode(pinRX, INPUT);
   pinMode(pinTX, OUTPUT);
-  
-  pixels.begin();
+
   Serial.begin(9600);
   mySerial.begin(115200);
-  
-  setColor(0, 0, 255);
-  wifiManager.resetSettings();
+
+  wifiManager.setColor(0, 0, 255);
+  //wifiManager.resetSettings();
   wifiManager.autoConnect("KOLONIAL.NO SVISJ - OPPSETT");
-  setColor(255, 30, 0);
+
+  if (WiFi.status() != WL_CONNECTED) {
+    wifiManager.setColor(255, 0, 0);
+    delay(2000);
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    wifiManager.setColor(0, 255, 0);
+    delay(2000);
+  }
+
+  wifiManager.setColor(255, 30, 0);
+
+  Serial.println("FERDIG I SETUP");
 }
 
 void loop() {
 
-//Reconnecter til nettverk dersom den ikke er på eller har fallt ut
+  unsigned long currentMillis = millis();
+
+  //Reconnecter til nettverk dersom den ikke er på eller har fallt ut
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Mangler nett. Prøver å sette opp nett igjen.");
     reconnect();
   }
-  
-  setColor(255, 30, 0);
+
   digitalWrite(pinBarcodeTrigger, HIGH);
-  
+
+  if (barCode.length() > 0) {
+    if (currentMillis - previousMillis > interval) {
+      // save the last time you blinked the LED
+      previousMillis = currentMillis;
+      scanningBlink = !scanningBlink;
+    }
+  } else {
+    wifiManager.setColor(255, 30, 0);
+  }
+
   //Tar imot data fra skanneren
   if (mySerial.available()) {
     delay(400);
     c = mySerial.read();
     if ((!blinkGreen) && (barCode.length() > 0) && (barCode.length() < 2)) {
-      setColor(0, 255, 0);
-      delay(500);
+      wifiManager.setColor(0, 255, 0);
+      delay(1000);
       blinkGreen = true;
     }
-	
-	//Bruker dataen fra skanneren og sender en post request til serveren
+
+    if (scanningBlink) {
+      wifiManager.setColor(255, 30, 0);
+    } else {
+      wifiManager.setColor(0, 0, 0);
+    }
+
+    //Bruker dataen fra skanneren og sender en post request til serveren
     if ((int)c == 13) {
       if (WiFi.status() == WL_CONNECTED) {
         Serial.print("Sender strekkode til server >> " + barCode + " >> ");
@@ -77,25 +105,25 @@ void loop() {
         c = '\0';
         barCode = "";
 
-		//Setter farge på LED'ene utifra responsen fra server
+        //Setter farge på LED'ene utifra responsen fra server
         if (response == "OK") {
           blinkGreen = false;
-          //setColor(0, 255, 0); Lyser grønt om varen blir lagt til i handlekurven
+          //wifiManager.setColor(0, 255, 0); Lyser grønt om varen blir lagt til i handlekurven
           delay(500);
         } else if (response == "FAIL") {
           blinkGreen = false;
-          setColor(255, 0, 0);
+          wifiManager.setColor(255, 0, 0);
           delay(3000);
         } else if (response == "LEVERING BESTILT") {
-          setColor(255, 255, 255);
+          wifiManager.setColor(255, 255, 255);
           delay(2000);
         }
 
       }
     } else {
-		
+
       if ((' ' <= c) && (c <= '~')) barCode += c;
-	  
+
     }
   }
   delay(400);
@@ -103,16 +131,7 @@ void loop() {
 
 //Metode for å reconnecte til nettverk
 void reconnect() {
-  setColor(0, 0, 255);
+  wifiManager.setColor(0, 0, 255);
   WiFiManager wifiManager;
   wifiManager.autoConnect("KOLONIAL.NO SVISJ - OPPSETT");
-}
-
-//Metode for å velge farge på RGB LED'ene
-void setColor(int r, int g, int b) {
-  for (int i = 0; i < NUMPIXELS; i++) {
-    pixels.setPixelColor(i, pixels.Color(r, g, b));
-    pixels.show();
-    delay(10);
-  }
 }
