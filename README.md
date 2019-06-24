@@ -37,4 +37,4 @@ The backend is made in the PHP framework Laravel and talks to a MySQL database. 
 The code for the backend is found in:
 `/web_api/`
 
-The code also runs live at: ![vrangum.com/kolonial](http://www.vrangum.com)
+The code also runs live at: [vrangum.com/kolonial](http://www.vrangum.com/kolonial)
